@@ -1,126 +1,80 @@
-set nocompatible              " be iMproved, required
-" set tabstop=4
-" set shiftwidth=4
-set expandtab " insert spaces when hitting TABs
-" set softtabstop=4 " insert/delete 4 spaces when hitting a TAB/BACKSPACE
-set autoindent
-set cursorline
-let &colorcolumn=join(range(99,999),",")
-syntax on
-set number
-set foldmethod=indent
-set foldlevel=99
-set backspace=2
-set nostartofline
-set incsearch
-set hlsearch
-set clipboard+=unnamed
-set t_Co=256
-set tags=src/helios/tags;
-let mapleader = ","
-hi MatchParen cterm=bold ctermbg=none ctermfg=magenta
-" Enable CursorLine
-" Remove trailing spaces
-autocmd BufWritePre * :%s/\s\+$//e
+" be iMproved, required
+set nocompatible
+" ------------------ Vundle Configuration ---------------
 filetype off                  " required
+
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
-
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-"Python related bundles"
-Bundle 'kien/ctrlp.vim'
-Bundle 'vim-scripts/The-NERD-tree'
-Bundle 'Lokaltog/vim-easymotion'
-Plugin 'scrooloose/syntastic'
-Plugin 'ervandew/supertab'
-Plugin 'benmills/vimux'
+" All of your Plugins must be added before the following line
 Plugin 'kchmck/vim-coffee-script'
-Plugin 'craigemery/vim-autotag'
-Plugin 'dkprice/vim-easygrep'
+" Linting across files
+Plugin 'scrooloose/syntastic'
+" Jedi auto complete for python
+Plugin 'davidhalter/jedi-vim'
+" Auto completion with supertab
+Plugin 'ervandew/supertab'
+" Auto indent files based on file type
+Plugin 'tpope/vim-sleuth'
+" Syntax highlighting on jade files
 Plugin 'digitaltoad/vim-pug'
+" Use ctags to move around files
+Plugin 'craigemery/vim-autotag'
 call vundle#end()            " required
 filetype plugin indent on    " required
-" To ignore plugin indent changes, instead use:
-"filetype plugin on
-"
-" Brief help
-" :PluginList       - lists configured plugins
-" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
-" :PluginSearch foo - searches for foo; append `!` to refresh local cache
-" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
-"
-" see :h vundle for more details or wiki for FAQ
-" Put your non-Plugin stuff after this line
-
+"  ------------------Vundle Configuration --------------
+let mapleader = ","
+" ----------------Syntastic Configuration-----------
 "Ensures that syntastic works on demand
-let g:syntastic_mode_map = {'mode': 'passive', 'active_filetypes': [], 'passive_filetypes': []}
+let g:syntastic_mode_map = {'mode': 'passive', 'active_filetypes': [],'passive_filetypes': []}
 let g:syntastic_python_checkers = ['pylint', 'flake8']
 let g:syntastic_always_populate_loc_list=1
 nnoremap <Leader>sc :SyntasticCheck<cr>
+" ----------------Syntastic Configuration----------
 
-let g:NERDTreeMapHelp = '<F1>'
-let g:EasyGrepRoot="repository"
-let g:netrw_liststyle=3
+"Make Jedi work with tabs
+let g:jedi#use_tabs_not_buffers = 1
 
-
-fun! Quiet(cmd)
-  try | exe a:cmd | catch | endtry
-endfun
-com! -nargs=1 Quiet :call Quiet(<args>)
-
-fun! VimuxInspect()
-  if exists('g:VimuxRunnerIndex')
-    VimuxInspectRunner
-  else
-    echo 'No tmux runner to inspect'
-  endif
-endfun
-
-fun! Preserve(command)
-    let _s=@/
-    let l=line(".")
-    let c=col(".")
-    execute a:command
-    let @/=_s
-    call cursor(l, c)
-endfun
-
-cnoremap %% <c-r>=expand('%:p')<cr>
-
-" vimux mappings starting with <leader>r (r)un
-noremap  <leader>rc :VimuxClearRunnerHistory<cr>
-noremap  <silent><leader>ri :call VimuxInspect()<cr>
-nmap     <leader>rl :call Preserve('normal V<leader>rs')<cr>
-noremap  <leader>ro :call VimuxOpenRunner()<cr>
-noremap  <leader>rp :VimuxPromptCommand<cr>
-noremap  <leader>rq :call VimuxCloseRunner()<cr>
-nnoremap <leader>rr :up!<cr>:Quiet('VimuxRunLastCommand')<cr>
-nnoremap <C-g> :NERDTree<CR>
-
-vmap     <leader>rs :call VimuxSlime()<cr>
-nmap     <leader>rs :call Preserve('normal vip<leader>rs')<cr>
-nmap     <leader>rS :call Preserve('normal ggVG<leader>rs')<cr>
-map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
-map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR
-map <Enter> o<ESC>
-map <S-Enter> O<ESC>
-
-if has("mouse")
-    set mouse=a
-endif
-" Isort command to check imports"
-command! -range=% Isort :<line1>,<line2>! isort -
+"  Marks curosr line
+set cursorline
+" Change column colour after 99
+let &colorcolumn=join(range(99,999),",")
+syntax on
+" Ensure that numbers appear in a file
+set number
+" Should not really use this as one ends up going into insert mode
+" set backspace=2
+hi MatchParen cterm=bold ctermbg=none ctermfg=magenta
+"--Searching
+" Highlight searched text
+set hlsearch
+" Search as soon as typing starts
+set incsearch
+" Remove trailing spaces
+autocmd BufWritePre * :%s/\s\+$//e
+" -----------Status Line ---------
 " Status Line
 set showcmd
 set ruler " Show ruler
 set laststatus=2 "show the statusline, even with just one file open
 
+"set statusline=%t       "tail of the filename
+"set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
+"set statusline+=%{&ff}] "file format
+"set statusline+=%h      "help file flag
+"set statusline+=%m      "modified flag
+"set statusline+=%r      "read only flag
+"set statusline+=%y      "filetype
+"set statusline+=%=      "left/right separator
+"set statusline+=%c,     "cursor column
+"set statusline+=%l/%L   "cursor line/total lines
+"set statusline+=\ %P    "percent through file
+
 if has("statusline")
-    set statusline=%<%F\%{exists('g:loaded_fugitive')?fugitive#statusline():''}%h%m%r%=%k[%{(&fenc\==\ \"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}][U+%04B]\ %-12.(%l,%c%V%)\ %P
+	set statusline=%<%F\%{exists('g:loaded_fugitive')?fugitive#statusline():''}%h%m%r%=%k[%{(&fenc\==\ \"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}][U+%04B]\ %-12.(%l,%c%V%)\ %P
 endif
+" Set colours to make color scheme work
+set t_Co=256
 colors jellybeans
-hi CursorLine term=bold cterm=bold,underline
