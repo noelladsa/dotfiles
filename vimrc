@@ -12,16 +12,18 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'kchmck/vim-coffee-script'
 " Linting across files
 Plugin 'scrooloose/syntastic'
-" Jedi auto complete for python
-Plugin 'davidhalter/jedi-vim'
-" Auto completion with supertab
-Plugin 'ervandew/supertab'
 " Auto indent files based on file type
 Plugin 'tpope/vim-sleuth'
 " Syntax highlighting on jade files
-Plugin 'digitaltoad/vim-pug'
-" Use ctags to move around files
-Plugin 'craigemery/vim-autotag'
+ Plugin 'digitaltoad/vim-pug'
+" Plugins for highlighting cjsx
+Plugin 'mtscout6/vim-cjsx'
+" Plugin to do regex folding
+Plugin 'tmhedberg/SimpylFold'
+" Plugin to indent python, special cases
+Plugin 'vim-scripts/indentpython.vim'
+" Auto completion with supertab
+Plugin 'ervandew/supertab'
 call vundle#end()            " required
 filetype plugin indent on    " required
 "  ------------------Vundle Configuration --------------
@@ -31,12 +33,11 @@ let mapleader = ","
 let g:syntastic_mode_map = {'mode': 'passive', 'active_filetypes': [],'passive_filetypes': []}
 let g:syntastic_python_checkers = ['pylint', 'flake8']
 let g:syntastic_always_populate_loc_list=1
-nnoremap <Leader>sc :SyntasticCheck<cr>
+noremap <Leader>sc :SyntasticCheck<cr>
 " ----------------Syntastic Configuration----------
-
-"Make Jedi work with tabs
-let g:jedi#use_tabs_not_buffers = 1
-
+" Set colours to make color scheme work
+set t_Co=256
+colors jellybeans
 "  Marks curosr line
 set cursorline
 " Change column colour after 99
@@ -52,8 +53,22 @@ hi MatchParen cterm=bold ctermbg=none ctermfg=magenta
 set hlsearch
 " Search as soon as typing starts
 set incsearch
-" Remove trailing spaces
-autocmd BufWritePre * :%s/\s\+$//e
+set tags=src/helios/tags;
+" Setup clipboard so copy buffer is accessible outside vim
+set clipboard+=unnamed
+" Folding
+set foldmethod=indent
+set foldlevel=99
+set mouse=a
+" Isort command to check imports"
+command! -range=% Isort :<line1>,<line2>! isort -
+" ---------- Split Navigations
+" Moving between vim split screens using
+noremap <silent> ,F :let word=expand("<cword>")<CR>:vsp<CR>:exec("tjump ".expand("<cword>"))<CR>nnoremap <C-]> g<C-]>
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
 " -----------Status Line ---------
 " Status Line
 set showcmd
@@ -75,6 +90,14 @@ set laststatus=2 "show the statusline, even with just one file open
 if has("statusline")
 	set statusline=%<%F\%{exists('g:loaded_fugitive')?fugitive#statusline():''}%h%m%r%=%k[%{(&fenc\==\ \"\"?&enc:&fenc).(&bomb?\",BOM\":\"\")}][U+%04B]\ %-12.(%l,%c%V%)\ %P
 endif
-" Set colours to make color scheme work
-set t_Co=256
-colors jellybeans
+" Remove trailing spaces
+autocmd BufWritePre * :%s/\s\+$//e
+" ------------Python Configuration------------------"
+au BufNewFile,BufRead *.py
+    \ set tabstop=4 |
+    \ set softtabstop=4 |
+    \ set shiftwidth=4 |
+    \ set textwidth=99 |
+    \ set expandtab |
+    \ set autoindent |
+    \ set fileformat=unix |
