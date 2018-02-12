@@ -5,14 +5,13 @@ filetype off                  " required
 
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
+set spelllang=en
+set spell
 call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-" All of your Plugins must be added before the following line
 Plugin 'kchmck/vim-coffee-script'
-" Linting across files
-Plugin 'scrooloose/syntastic'
-" Auto indent files based on file type
+"Heuristic buffer setting
 Plugin 'tpope/vim-sleuth'
 " Syntax highlighting on jade files
  Plugin 'digitaltoad/vim-pug'
@@ -20,32 +19,58 @@ Plugin 'tpope/vim-sleuth'
 Plugin 'mtscout6/vim-cjsx'
 " Plugin to do regex folding
 Plugin 'tmhedberg/SimpylFold'
-" Plugin to indent python, special cases
-Plugin 'vim-scripts/indentpython.vim'
-" Auto completion with supertab
-Plugin 'ervandew/supertab'
+" Plugin that uses ctags
+Plugin 'vim-scripts/taglist.vim'
+"PLugin to highlight special python syntax
+Plugin 'vim-python/python-syntax'
+"Trying an asynchronous linter"
+Plugin 'w0rp/ale'
+"Searching in vim
+Plugin 'mileszs/ack.vim'
 call vundle#end()            " required
+"  ------------------Key Mapings--------------
 filetype plugin indent on    " required
-"  ------------------Vundle Configuration --------------
+filetype plugin on
 let mapleader = ","
-" ----------------Syntastic Configuration-----------
-"Ensures that syntastic works on demand
-let g:syntastic_mode_map = {'mode': 'passive', 'active_filetypes': [],'passive_filetypes': []}
-let g:syntastic_python_checkers = ['pylint', 'flake8']
-let g:syntastic_always_populate_loc_list=1
-noremap <Leader>sc :SyntasticCheck<cr>
+" -------------------OmniCompletion on ---------------
+function! UpdateTags()
+  execute ":silent !ctags -R --languages=python"
+  execute ":redraw!"
+  echohl StatusLine | echo "Python tag updated" | echohl None
+endfunction
+
+noremap <Leader>c :call UpdateTags()
+" ----------------Ale Configuration-----------
+" Use project-specific Python linter config, if available
+" Prevent linting on open file
+let g:ale_lint_on_enter = 0
+nnoremap <Leader>ll :ALELint<cr>
+if filereadable("etc/pep8.cfg")
+  let g:ale_python_flake8_options="--config=etc/pep8.cfg"
+endif
+if filereadable("etc/pylintrc")
+  let g:ale_python_pylint_options="--rcfile=etc/pylintrc"
+endif
+" Format what errors look like with associated linters
+let g:ale_echo_msg_error_str = 'E'
+let g:ale_echo_msg_warning_str = 'W'
+let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
+" Mappings to move between errors
+nmap <silent> <C-o> <Plug>(ale_previous_wrap)
+nmap <silent> <C-p> <Plug>(ale_next_wrap)
+
 " ----------------Syntastic Configuration----------
 " Set colours to make color scheme work
 set t_Co=256
 colors jellybeans
 "  Marks curosr line
-set cursorline
+" set cursorline
 " Change column colour after 99
-let &colorcolumn=join(range(99,999),",")
+let &colorcolumn=join(range(80,999),",")
 syntax on
 " Ensure that numbers appear in a file
 set number
-" Should not really use this as one ends up going into insert mode
+"  Should not really use this as one ends up going into insert mode
 " set backspace=2
 hi MatchParen cterm=bold ctermbg=none ctermfg=magenta
 "--Searching
